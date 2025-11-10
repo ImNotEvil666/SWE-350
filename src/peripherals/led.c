@@ -8,6 +8,19 @@
 static hal_map_t hal_map;
 static int hal_initialized = 0;
 
+/*
+ * led_init
+ * Purpose: Initialize an LED handle by mapping the LED register address.
+ * Params:
+ *   led - non-NULL pointer to led_handle_t to initialize.
+ * Returns:
+ *   0 on success; -1 on error.
+ * Side effects:
+ *   Opens HAL if needed; sets led->reg_addr; marks initialized.
+ * Preconditions:
+ *   led != NULL.
+ */
+
 int led_init(led_handle_t *led) {
     if (!led) return -1;
     
@@ -36,6 +49,17 @@ int led_init(led_handle_t *led) {
     return 0;
 }
 
+/*
+ * led_cleanup
+ * Purpose: Mark LED handle as uninitialized; release HAL if owned here.
+ * Params:
+ *   led - pointer to led_handle_t.
+ * Returns:
+ *   0 on success; -1 on error.
+ * Notes:
+ *   If HAL lifetime is global, this may only clear the handle state.
+ */
+
 int led_cleanup(led_handle_t *led) {
     if (!led || !led->initialized) return -1;
     
@@ -58,6 +82,18 @@ int led_cleanup(led_handle_t *led) {
     return 0;
 }
 
+/*
+ * led_set
+ * Purpose: Write a 10-bit LED pattern to the LED register.
+ * Params:
+ *   led     - initialized LED handle.
+ *   pattern - lower 10 bits drive LED9..LED0 (1 = on).
+ * Returns:
+ *   0 on success; -1 on error.
+ * Preconditions:
+ *   led != NULL and led->initialized == 1.
+ */
+
 int led_set(led_handle_t *led, uint32_t pattern) {
     if (!led || !led->initialized || !led->reg_addr) return -1;
     
@@ -70,6 +106,18 @@ int led_set(led_handle_t *led, uint32_t pattern) {
     return 0;
 }
 
+/*
+ * led_get
+ * Purpose: Read back the current LED register value.
+ * Params:
+ *   led      - initialized LED handle.
+ *   pattern  - out parameter; receives lower 10 LED bits.
+ * Returns:
+ *   0 on success; -1 on error.
+ * Preconditions:
+ *   pattern != NULL; handle initialized.
+ */
+
 int led_get(led_handle_t *led, uint32_t *pattern) {
     if (!led || !led->initialized || !led->reg_addr || !pattern) return -1;
     
@@ -79,6 +127,18 @@ int led_get(led_handle_t *led, uint32_t *pattern) {
     
     return 0;
 }
+
+/*
+ * led_turn_on
+ * Purpose: Turn on a single LED while preserving other LED states.
+ * Params:
+ *   led        - initialized LED handle.
+ *   led_number - 0..9, index of LED to turn on.
+ * Returns:
+ *   0 on success; -1 on invalid handle or index, or read/write failure.
+ * Behavior:
+ *   Reads current pattern, sets bit led_number, writes back.
+ */
 
 int led_turn_on(led_handle_t *led, int led_number) {
     if (!led || !led->initialized || led_number < 0 || led_number >= LED_COUNT) {

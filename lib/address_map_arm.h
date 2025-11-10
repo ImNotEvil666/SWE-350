@@ -1,3 +1,11 @@
+/*
+ * File: address_map_arm.h
+ * Purpose: SoC memory map constants for LW bridge and peripherals.
+ * Notes:
+ *   Contains base addresses and spans for FPGA peripherals (HEX, LED, SW).
+ *   Used by HAL and peripheral drivers to compute register pointers.
+ */
+
 /* Memory */
 #define DDR_BASE               0x00000000
 #define DDR_SPAN               0x3FFFFFFF
