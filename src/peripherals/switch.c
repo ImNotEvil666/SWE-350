@@ -8,6 +8,17 @@
 static hal_map_t hal_map;
 static int hal_initialized = 0;
 
+/*
+ * switch_init
+ * Purpose: Initialize a switch handle by mapping the switch register address.
+ * Params:
+ *   sw - non-NULL pointer to switch_handle_t to initialize.
+ * Returns:
+ *   0 on success; -1 on error.
+ * Side effects:
+ *   Opens HAL if needed; sets sw->reg_addr; marks initialized.
+ */
+
 int switch_init(switch_handle_t *sw) {
     if (!sw) return -1;
     
@@ -33,6 +44,17 @@ int switch_init(switch_handle_t *sw) {
     return 0;
 }
 
+/*
+ * switch_cleanup
+ * Purpose: Mark switch handle as uninitialized; release HAL if owned here.
+ * Params:
+ *   sw - pointer to switch_handle_t.
+ * Returns:
+ *   0 on success; -1 on error.
+ * Notes:
+ *   If HAL lifetime is global, this may only clear the handle state.
+ */
+
 int switch_cleanup(switch_handle_t *sw) {
     if (!sw || !sw->initialized) return -1;
     
@@ -52,6 +74,17 @@ int switch_cleanup(switch_handle_t *sw) {
     return 0;
 }
 
+/*
+ * switch_read_all
+ * Purpose: Read all switch states into a 10-bit mask.
+ * Params:
+ *   sw           - initialized switch handle.
+ * Returns:
+ *   0 on success; -1 on error.
+ * Preconditions:
+ *   switch_state != NULL; handle initialized.
+ */
+
 int switch_read_all(switch_handle_t *sw, uint32_t *switch_state) {
     if (!sw || !sw->initialized || !sw->reg_addr || !switch_state) return -1;
     
@@ -63,6 +96,19 @@ int switch_read_all(switch_handle_t *sw, uint32_t *switch_state) {
     
     return 0;
 }
+
+/*
+ * switch_read
+ * Purpose: Read a single switch by index.
+ * Params:
+ *   sw            - initialized switch handle.
+ *   switch_number - 0-9.
+ *   state         - out parameter; 1 if ON, 0 if OFF.
+ * Returns:
+ *   0 on success; -1 on invalid input or read failure.
+ * Behavior:
+ *   Calls switch_read_all then extracts the requested bit.
+ */
 
 int switch_read(switch_handle_t *sw, int switch_number, int *state) {
     if (!sw || !sw->initialized || switch_number < 0 || switch_number >= SWITCH_COUNT || !state) {
